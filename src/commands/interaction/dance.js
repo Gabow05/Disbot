@@ -24,7 +24,12 @@ module.exports = {
             "¡inicia un baile increíble! 🕺",
             "¡demuestra sus mejores pasos de baile! ✨",
             "¡se mueve al ritmo de la música! 🎶",
-            "¡improvisa una coreografía espectacular! 🌟"
+            "¡improvisa una coreografía espectacular! 🌟",
+            "¡baila como si nadie estuviera mirando! 💫",
+            "¡se convierte en el alma de la fiesta! 🎊",
+            "¡demuestra sus movimientos más locos! 🌈",
+            "¡hace un baile digno de TikTok! 📱",
+            "¡mueve el esqueleto con estilo! 💃"
         ];
 
         const duoMessages = [
@@ -32,15 +37,20 @@ module.exports = {
             "comparte un baile especial con",
             "se mueve al ritmo con",
             "organiza una fiesta de baile con",
-            "demuestra sus pasos de baile junto a"
+            "demuestra sus pasos de baile junto a",
+            "crea una coreografía increíble con",
+            "baila una pieza perfecta con",
+            "comparte un momento musical con",
+            "hace un dueto espectacular con",
+            "inicia un flashmob con"
         ];
 
-        const musicEmojis = ['💃', '🕺', '🎵', '🎶', '🎊', '✨'];
+        const musicEmojis = ['💃', '🕺', '🎵', '🎶', '🎊', '✨', '🌟', '🎭', '🎪', '🎨'];
         const randomEmoji = musicEmojis[Math.floor(Math.random() * musicEmojis.length)];
-        
+
         let description;
         let gifSearch = 'anime dance';
-        
+
         if (target) {
             const randomDuoMessage = duoMessages[Math.floor(Math.random() * duoMessages.length)];
             description = `**${message.author}** ${randomDuoMessage} **${target}** ${randomEmoji}`;
@@ -65,13 +75,18 @@ module.exports = {
 
     async slashExecute(interaction) {
         const target = interaction.options.getUser('usuario');
-        
+
         const soloMessages = [
             "¡se pone a bailar con mucho ritmo! 🎵",
             "¡inicia un baile increíble! 🕺",
             "¡demuestra sus mejores pasos de baile! ✨",
             "¡se mueve al ritmo de la música! 🎶",
-            "¡improvisa una coreografía espectacular! 🌟"
+            "¡improvisa una coreografía espectacular! 🌟",
+            "¡baila como si nadie estuviera mirando! 💫",
+            "¡se convierte en el alma de la fiesta! 🎊",
+            "¡demuestra sus movimientos más locos! 🌈",
+            "¡hace un baile digno de TikTok! 📱",
+            "¡mueve el esqueleto con estilo! 💃"
         ];
 
         const duoMessages = [
@@ -79,15 +94,20 @@ module.exports = {
             "comparte un baile especial con",
             "se mueve al ritmo con",
             "organiza una fiesta de baile con",
-            "demuestra sus pasos de baile junto a"
+            "demuestra sus pasos de baile junto a",
+            "crea una coreografía increíble con",
+            "baila una pieza perfecta con",
+            "comparte un momento musical con",
+            "hace un dueto espectacular con",
+            "inicia un flashmob con"
         ];
 
-        const musicEmojis = ['💃', '🕺', '🎵', '🎶', '🎊', '✨'];
+        const musicEmojis = ['💃', '🕺', '🎵', '🎶', '🎊', '✨', '🌟', '🎭', '🎪', '🎨'];
         const randomEmoji = musicEmojis[Math.floor(Math.random() * musicEmojis.length)];
-        
+
         let description;
         let gifSearch = 'anime dance';
-        
+
         if (target) {
             const randomDuoMessage = duoMessages[Math.floor(Math.random() * duoMessages.length)];
             description = `**${interaction.user}** ${randomDuoMessage} **${target}** ${randomEmoji}`;

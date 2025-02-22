@@ -29,7 +29,11 @@ module.exports = {
             "entra en modo crisis existencial 🤯",
             "tiene un momento de pánico absoluto ⚡",
             "pierde completamente la calma 💥",
-            "experimenta una crisis nerviosa graciosa 😵"
+            "experimenta una crisis nerviosa graciosa 😵",
+            "se congela del pánico 🥶",
+            "entra en modo caos total 🌪️",
+            "tiene un cortocircuito mental 🔌",
+            "se vuelve un manojo de nervios 🎭"
         ];
 
         const targetMessages = [
@@ -40,7 +44,11 @@ module.exports = {
             "entra en modo pánico por",
             "colapsa cómicamente debido a",
             "pierde el control por culpa de",
-            "sufre un ataque de nervios por"
+            "sufre un ataque de nervios por",
+            "se asusta dramáticamente por",
+            "tiene un momento de crisis por",
+            "se vuelve un manojo de nervios por",
+            "entra en caos total por culpa de"
         ];
 
         const effects = [
@@ -49,7 +57,11 @@ module.exports = {
             "¡HELP! 🆘",
             "¡PÁNICO! ⚡",
             "¡CRISIS! 💫",
-            "¡AUXILIO! 😵"
+            "¡AUXILIO! 😵",
+            "¡CAOS! 🌪️",
+            "¡AAACK! 💥",
+            "¡MAMÁ! 😭",
+            "¡SALVESE QUIEN PUEDA! 🏃‍♂️"
         ];
 
         const randomEffect = effects[Math.floor(Math.random() * effects.length)];
@@ -87,7 +99,11 @@ module.exports = {
             "entra en modo crisis existencial 🤯",
             "tiene un momento de pánico absoluto ⚡",
             "pierde completamente la calma 💥",
-            "experimenta una crisis nerviosa graciosa 😵"
+            "experimenta una crisis nerviosa graciosa 😵",
+            "se congela del pánico 🥶",
+            "entra en modo caos total 🌪️",
+            "tiene un cortocircuito mental 🔌",
+            "se vuelve un manojo de nervios 🎭"
         ];
 
         const targetMessages = [
@@ -98,7 +114,11 @@ module.exports = {
             "entra en modo pánico por",
             "colapsa cómicamente debido a",
             "pierde el control por culpa de",
-            "sufre un ataque de nervios por"
+            "sufre un ataque de nervios por",
+            "se asusta dramáticamente por",
+            "tiene un momento de crisis por",
+            "se vuelve un manojo de nervios por",
+            "entra en caos total por culpa de"
         ];
 
         const effects = [
@@ -107,7 +127,11 @@ module.exports = {
             "¡HELP! 🆘",
             "¡PÁNICO! ⚡",
             "¡CRISIS! 💫",
-            "¡AUXILIO! 😵"
+            "¡AUXILIO! 😵",
+            "¡CAOS! 🌪️",
+            "¡AAACK! 💥",
+            "¡MAMÁ! 😭",
+            "¡SALVESE QUIEN PUEDA! 🏃‍♂️"
         ];
 
         const randomEffect = effects[Math.floor(Math.random() * effects.length)];

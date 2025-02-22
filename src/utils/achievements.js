@@ -32,6 +32,16 @@ const achievements = {
             { requirement: 100, reward: 30000, emoji: '👑' }
         ]
     },
+    LEVEL_MASTER: {
+        id: 'level_master',
+        name: 'Maestro de Niveles',
+        description: 'Alcanza niveles más altos',
+        levels: [
+            { requirement: 10, reward: 2000, emoji: '🌟' },
+            { requirement: 25, reward: 10000, emoji: '💫' },
+            { requirement: 50, reward: 30000, emoji: '✨' }
+        ]
+    },
     WORK_ETHIC: {
         id: 'work_ethic',
         name: 'Ética Laboral',

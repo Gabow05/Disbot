@@ -1,13 +1,16 @@
 const { db } = require('./database.js');
 const { createEmbed } = require('./embed.js');
+const { checkAchievementProgress } = require('./achievements.js');
+const { addCoins } = require('./database.js');
 
 const XP_PER_MESSAGE = 5; // XP base por mensaje
 const XP_COOLDOWN = 60000; // 1 minuto entre ganancia de XP
+const COINS_PER_LEVEL = 100; // Monedas base por nivel
 
 async function addExperience(message) {
     try {
         const now = new Date();
-        
+
         // Verificar cooldown
         const lastMessage = await db.query(
             'SELECT last_message_timestamp FROM user_levels WHERE user_id = $1',
@@ -50,6 +53,10 @@ async function addExperience(message) {
                     [newLevel, experience - nextLevelExp, message.author.id]
                 );
 
+                // Calcular y dar recompensa de monedas
+                const coinsReward = COINS_PER_LEVEL * newLevel;
+                await addCoins(message.author.id, coinsReward);
+
                 // Enviar mensaje de nivel alcanzado
                 const levelEmojis = ['🌱', '🌿', '🌳', '🌺', '🌸', '🌹', '👑'];
                 const newLevelEmoji = levelEmojis[Math.min(Math.floor(newLevel / 10), levelEmojis.length - 1)];
@@ -58,10 +65,18 @@ async function addExperience(message) {
                     `${newLevelEmoji} ¡Subiste de Nivel!`,
                     `¡Felicidades **${message.author.username}**!\n` +
                     `Has alcanzado el **nivel ${newLevel}**\n\n` +
-                    `🎉 ¡Sigue así! El siguiente nivel te espera...`
+                    `🎁 Recompensa: **${coinsReward}** monedas\n` +
+                    `✨ Beneficios de nivel ${newLevel}:\n` +
+                    `• Mayor ganancia de experiencia\n` +
+                    `• Acceso a nuevos comandos\n` +
+                    `• ¡Y más sorpresas!\n\n` +
+                    `🎯 Siguiente nivel: ${newLevel + 1}`
                 );
 
                 message.channel.send({ embeds: [embed] });
+
+                // Verificar logro de niveles
+                await checkAchievementProgress(message, 'LEVEL_MASTER', newLevel);
             }
 
             await client.query('COMMIT');
@@ -77,5 +92,7 @@ async function addExperience(message) {
 }
 
 module.exports = {
-    addExperience
+    addExperience,
+    XP_PER_MESSAGE,
+    COINS_PER_LEVEL
 };

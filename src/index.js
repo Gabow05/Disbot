@@ -4,109 +4,149 @@ const { token, prefix } = require('./config.js');
 const { registerSlashCommands } = require('./utils/slashCommands.js');
 const { startMonitoring } = require('./utils/monitoring.js');
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers
-    ]
+// Iniciar servidor de monitoreo primero
+startMonitoring().then(() => {
+    console.log('Monitoring server started successfully');
+    startBot();
+}).catch(error => {
+    console.error('Failed to start monitoring server:', error);
+    process.exit(1);
 });
 
-client.commands = new Collection();
-client.cooldowns = new Collection();
+function startBot() {
+    const client = new Client({
+        intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildMembers
+        ]
+    });
 
-// Cargar comandos
-const commandFolders = fs.readdirSync('./src/commands');
+    client.commands = new Collection();
+    client.cooldowns = new Collection();
 
-for (const folder of commandFolders) {
-    const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
-    for (const file of commandFiles) {
-        const command = require(`./commands/${folder}/${file}`);
-        console.log(`Loading command: ${command.name} from ${folder}/${file}`);
-        client.commands.set(command.name, command);
-    }
-}
+    // Cargar comandos
+    const commandFolders = fs.readdirSync('./src/commands');
 
-client.once('ready', async () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-    console.log('Loaded commands:', Array.from(client.commands.keys()).join(', '));
-    client.user.setActivity(`${prefix}help o ${prefix}ayuda`, { type: 'WATCHING' });
-
-    // Iniciar servidor de monitoreo
-    startMonitoring();
-
-    // Registrar comandos de barra
-    try {
-        await registerSlashCommands(Array.from(client.commands.values()), client.user.id);
-        console.log('Slash commands registered successfully');
-    } catch (error) {
-        console.error('Error registering slash commands:', error);
-    }
-});
-
-// Manejar comandos de barra
-client.on('interactionCreate', async interaction => {
-    if (!interaction.isCommand()) return;
-
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
-
-    try {
-        if (command.slashExecute) {
-            await command.slashExecute(interaction);
-        } else {
-            await interaction.reply({ content: 'Este comando solo está disponible usando el prefijo !', ephemeral: true });
+    for (const folder of commandFolders) {
+        const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
+        for (const file of commandFiles) {
+            const command = require(`./commands/${folder}/${file}`);
+            console.log(`Loading command: ${command.name} from ${folder}/${file}`);
+            client.commands.set(command.name, command);
         }
-    } catch (error) {
-        console.error('Error executing slash command:', error);
-        await interaction.reply({ 
-            content: 'Hubo un error al ejecutar este comando.', 
-            ephemeral: true 
+    }
+
+    client.once('ready', async () => {
+        console.log(`Logged in as ${client.user.tag}!`);
+        console.log('Loaded commands:', Array.from(client.commands.keys()).join(', '));
+        client.user.setActivity(`${prefix}help o ${prefix}ayuda`, { type: 'WATCHING' });
+
+        // Registrar comandos de barra
+        try {
+            await registerSlashCommands(Array.from(client.commands.values()), client.user.id);
+            console.log('Slash commands registered successfully');
+        } catch (error) {
+            console.error('Error registering slash commands:', error);
+        }
+    });
+
+    // Manejar comandos de barra
+    client.on('interactionCreate', async interaction => {
+        if (!interaction.isCommand()) return;
+
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
+
+        try {
+            if (command.slashExecute) {
+                await command.slashExecute(interaction);
+            } else {
+                await interaction.reply({ content: 'Este comando solo está disponible usando el prefijo !', ephemeral: true });
+            }
+        } catch (error) {
+            console.error('Error executing slash command:', error);
+            await interaction.reply({ 
+                content: 'Hubo un error al ejecutar este comando.', 
+                ephemeral: true 
+            });
+        }
+    });
+
+    // Manejar comandos con prefijo
+    client.on('messageCreate', async message => {
+        if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+        const args = message.content.slice(prefix.length).trim().split(/ +/);
+        const commandName = args.shift().toLowerCase();
+
+        const command = client.commands.get(commandName) 
+            || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+        if (!command) return;
+
+        // Cooldown check
+        if (!client.cooldowns.has(command.name)) {
+            client.cooldowns.set(command.name, new Collection());
+        }
+
+        const now = Date.now();
+        const timestamps = client.cooldowns.get(command.name);
+        const cooldownAmount = (command.cooldown || 3) * 1000;
+
+        if (timestamps.has(message.author.id)) {
+            const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+
+            if (now < expirationTime) {
+                const timeLeft = (expirationTime - now) / 1000;
+                return message.reply(`Por favor espera ${timeLeft.toFixed(1)} segundos más antes de usar el comando \`${command.name}\`.`);
+            }
+        }
+
+        timestamps.set(message.author.id, now);
+        setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+
+        try {
+            await command.execute(message, args);
+        } catch (error) {
+            console.error('Error executing command:', command.name);
+            console.error(error);
+            message.reply('¡Hubo un error al ejecutar el comando!');
+        }
+    });
+
+    // Manejar reconexiones
+    client.on('disconnect', () => {
+        console.log('Bot disconnected! Attempting to reconnect...');
+    });
+
+    client.on('error', error => {
+        console.error('Discord client error:', error);
+    });
+
+    // Iniciar sesión con reintentos
+    function loginWithRetry(retries = 5, delay = 5000) {
+        client.login(token).catch(error => {
+            console.error('Failed to login:', error);
+            if (retries > 0) {
+                console.log(`Retrying login in ${delay/1000} seconds... (${retries} attempts remaining)`);
+                setTimeout(() => loginWithRetry(retries - 1, delay), delay);
+            } else {
+                console.error('Max login retries reached. Please check your token and internet connection.');
+                process.exit(1);
+            }
         });
     }
+
+    loginWithRetry();
+}
+
+// Manejar errores no capturados
+process.on('uncaughtException', error => {
+    console.error('Uncaught Exception:', error);
 });
 
-// Manejar comandos con prefijo
-client.on('messageCreate', async message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-
-    const command = client.commands.get(commandName) 
-        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-
-    if (!command) return;
-
-    // Cooldown check
-    if (!client.cooldowns.has(command.name)) {
-        client.cooldowns.set(command.name, new Collection());
-    }
-
-    const now = Date.now();
-    const timestamps = client.cooldowns.get(command.name);
-    const cooldownAmount = (command.cooldown || 3) * 1000;
-
-    if (timestamps.has(message.author.id)) {
-        const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-        if (now < expirationTime) {
-            const timeLeft = (expirationTime - now) / 1000;
-            return message.reply(`Por favor espera ${timeLeft.toFixed(1)} segundos más antes de usar el comando \`${command.name}\`.`);
-        }
-    }
-
-    timestamps.set(message.author.id, now);
-    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
-    try {
-        await command.execute(message, args);
-    } catch (error) {
-        console.error('Error executing command:', command.name);
-        console.error(error);
-        message.reply('¡Hubo un error al ejecutar el comando!');
-    }
+process.on('unhandledRejection', error => {
+    console.error('Unhandled Rejection:', error);
 });
-
-client.login(token);
