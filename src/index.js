@@ -1,6 +1,7 @@
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const { token, prefix } = require('./config.js');
+const { registerSlashCommands } = require('./utils/slashCommands.js');
 
 const client = new Client({
     intents: [
@@ -14,8 +15,9 @@ const client = new Client({
 client.commands = new Collection();
 client.cooldowns = new Collection();
 
-// Load commands
+// Cargar comandos
 const commandFolders = fs.readdirSync('./src/commands');
+
 for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
@@ -25,12 +27,43 @@ for (const folder of commandFolders) {
     }
 }
 
-client.on('ready', () => {
+client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     console.log('Loaded commands:', Array.from(client.commands.keys()).join(', '));
-    client.user.setActivity(`${prefix}help`, { type: 'WATCHING' });
+    client.user.setActivity(`${prefix}help o ${prefix}ayuda`, { type: 'WATCHING' });
+
+    // Registrar comandos de barra
+    try {
+        await registerSlashCommands(Array.from(client.commands.values()), client.user.id);
+        console.log('Slash commands registered successfully');
+    } catch (error) {
+        console.error('Error registering slash commands:', error);
+    }
 });
 
+// Manejar comandos de barra
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        if (command.slashExecute) {
+            await command.slashExecute(interaction);
+        } else {
+            await interaction.reply({ content: 'Este comando solo está disponible usando el prefijo !', ephemeral: true });
+        }
+    } catch (error) {
+        console.error('Error executing slash command:', error);
+        await interaction.reply({ 
+            content: 'Hubo un error al ejecutar este comando.', 
+            ephemeral: true 
+        });
+    }
+});
+
+// Manejar comandos con prefijo
 client.on('messageCreate', async message => {
     if (!message.content.startsWith(prefix) || message.author.bot) return;
 
