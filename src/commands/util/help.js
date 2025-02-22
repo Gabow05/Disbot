@@ -32,7 +32,7 @@ module.exports = {
                 `📖 Ayuda: ${command.name}`,
                 `**${command.description}**\n\n` +
                 (command.aliases ? `✨ **Aliases:** ${command.aliases.join(', ')}\n` : '') +
-                (command.usage ? `📝 **Uso:** ${command.usage}\n` : '') +
+                (command.usage ? `📝 **Uso:** !${command.name} ${command.usage}\n` : `📝 **Uso:** !${command.name}\n`) +
                 `⏰ **Cooldown:** ${command.cooldown || 3} segundos`
             );
 
@@ -55,7 +55,8 @@ module.exports = {
             '📌 Usa `!help <comando>` para más información sobre un comando específico.\n' +
             '🎮 Todos los comandos empiezan con el prefijo `!`\n\n' +
             '👨‍💻 **Bot creado por Gabow**\n' +
-            '🌟 Sistema de mascotas, economía y diversión'
+            '🌟 Sistema de mascotas, economía y diversión\n' +
+            '🎀 Más de 30 comandos de interacción con GIFs'
         );
 
         // Agregar campos para cada categoría
@@ -64,7 +65,7 @@ module.exports = {
             const commandList = cmds
                 .map(cmd => {
                     const aliases = cmd.aliases ? ` *(${cmd.aliases.join(', ')})*` : '';
-                    return `> \`${cmd.name}\`${aliases}\n> ${cmd.description}`;
+                    return `> \`!${cmd.name}\`${aliases}\n> ${cmd.description}`;
                 })
                 .slice(0, 10) // Limitar a 10 comandos por categoría
                 .join('\n\n');
@@ -80,7 +81,7 @@ module.exports = {
 
         // Agregar pie de página
         helpEmbed.setFooter({ 
-            text: '¡Gracias por usar el bot! - Creado por Gabow'
+            text: '¡Gracias por usar el bot! - Creado con ❤️ por Gabow'
         });
 
         message.channel.send({ embeds: [helpEmbed] });

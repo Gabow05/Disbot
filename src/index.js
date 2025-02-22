@@ -2,6 +2,7 @@ const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const { token, prefix } = require('./config.js');
 const { registerSlashCommands } = require('./utils/slashCommands.js');
+const { startMonitoring } = require('./utils/monitoring.js');
 
 const client = new Client({
     intents: [
@@ -31,6 +32,9 @@ client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}!`);
     console.log('Loaded commands:', Array.from(client.commands.keys()).join(', '));
     client.user.setActivity(`${prefix}help o ${prefix}ayuda`, { type: 'WATCHING' });
+
+    // Iniciar servidor de monitoreo
+    startMonitoring();
 
     // Registrar comandos de barra
     try {
