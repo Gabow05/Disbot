@@ -1,5 +1,6 @@
 const { createEmbed } = require('../../utils/embed.js');
 const { addCoins, setLastWork, getUser } = require('../../utils/database.js');
+const { checkAchievementProgress } = require('../../utils/achievements.js');
 
 const jobs = [
     { name: 'Programador', pay: [100, 500], message: 'escribiste código y arreglaste bugs' },
@@ -15,23 +16,31 @@ module.exports = {
     aliases: ['w'],
     cooldown: 3600, // 1 hora de cooldown
     async execute(message, args) {
-        const userId = message.author.id;
-        const user = getUser(userId);
+        try {
+            const userId = message.author.id;
+            const user = await getUser(userId);
 
-        const job = jobs[Math.floor(Math.random() * jobs.length)];
-        const earnedCoins = Math.floor(Math.random() * (job.pay[1] - job.pay[0])) + job.pay[0];
+            const job = jobs[Math.floor(Math.random() * jobs.length)];
+            const earnedCoins = Math.floor(Math.random() * (job.pay[1] - job.pay[0])) + job.pay[0];
 
-        // Agregar monedas al usuario y actualizar último trabajo
-        addCoins(userId, earnedCoins);
-        setLastWork(userId);
+            // Agregar monedas al usuario y actualizar último trabajo
+            await addCoins(userId, earnedCoins);
+            await setLastWork(userId);
 
-        const embed = createEmbed(
-            '💼 ¡Trabajaste!',
-            `Trabajaste como ${job.name} y ${job.message}.\n\n` +
-            `¡Ganaste ${earnedCoins} 🪙 monedas!\n` +
-            `Balance actual: ${user.coins + earnedCoins} 🪙`
-        );
+            // Verificar logros
+            await checkAchievementProgress(message, 'WORK_ETHIC', 1);
 
-        message.channel.send({ embeds: [embed] });
+            const embed = createEmbed(
+                '💼 ¡Trabajaste!',
+                `Trabajaste como ${job.name} y ${job.message}.\n\n` +
+                `¡Ganaste ${earnedCoins} 🪙 monedas!\n` +
+                `Balance actual: ${user.coins + earnedCoins} 🪙`
+            );
+
+            message.channel.send({ embeds: [embed] });
+        } catch (error) {
+            console.error('Error en comando work:', error);
+            message.reply('¡Hubo un error al trabajar! Por favor, intenta nuevamente.');
+        }
     },
 };

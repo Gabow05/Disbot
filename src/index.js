@@ -20,12 +20,14 @@ for (const folder of commandFolders) {
     const commandFiles = fs.readdirSync(`./src/commands/${folder}`).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
         const command = require(`./commands/${folder}/${file}`);
+        console.log(`Loading command: ${command.name} from ${folder}/${file}`);
         client.commands.set(command.name, command);
     }
 }
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
+    console.log('Loaded commands:', Array.from(client.commands.keys()).join(', '));
     client.user.setActivity(`${prefix}help`, { type: 'WATCHING' });
 });
 
@@ -54,7 +56,7 @@ client.on('messageCreate', async message => {
 
         if (now < expirationTime) {
             const timeLeft = (expirationTime - now) / 1000;
-            return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before using the \`${command.name}\` command.`);
+            return message.reply(`Por favor espera ${timeLeft.toFixed(1)} segundos más antes de usar el comando \`${command.name}\`.`);
         }
     }
 
@@ -64,8 +66,9 @@ client.on('messageCreate', async message => {
     try {
         await command.execute(message, args);
     } catch (error) {
+        console.error('Error executing command:', command.name);
         console.error(error);
-        message.reply('There was an error executing that command!');
+        message.reply('¡Hubo un error al ejecutar el comando!');
     }
 });
 
