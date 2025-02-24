@@ -1,18 +1,28 @@
 const express = require('express');
 const app = express();
 
-// Endpoint mejorado para el monitoreo
+// Mejorado para keepon.berlin
 app.get('/', (req, res) => {
     const uptime = process.uptime();
     const days = Math.floor(uptime / 86400);
     const hours = Math.floor((uptime % 86400) / 3600);
     const minutes = Math.floor((uptime % 3600) / 60);
+    const seconds = Math.floor(uptime % 60);
 
     res.json({
-        status: 'Bot is running!',
-        uptime: `${days}d ${hours}h ${minutes}m`,
-        timestamp: new Date().toISOString()
+        status: 'online',
+        name: 'Discord Bot',
+        uptime: `${days}d ${hours}h ${minutes}m ${seconds}s`,
+        timestamp: new Date().toISOString(),
+        memory: process.memoryUsage(),
+        platform: process.platform,
+        nodejs: process.version
     });
+});
+
+// Endpoint específico para keepon
+app.get('/keepon', (req, res) => {
+    res.status(200).send('OK');
 });
 
 function startMonitoring() {
@@ -26,10 +36,11 @@ function startMonitoring() {
             reject(error);
         });
 
-        // Mantener el proceso activo
+        // Keep-alive mejorado
         setInterval(() => {
-            console.log('Keeping process alive - Current uptime:', process.uptime());
-        }, 60000); // Log cada minuto
+            const uptime = process.uptime();
+            console.log(`[KEEPALIVE] Bot running - Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m - Memory: ${Math.floor(process.memoryUsage().heapUsed / 1024 / 1024)}MB`);
+        }, 30000); // Log cada 30 segundos
     });
 }
 
